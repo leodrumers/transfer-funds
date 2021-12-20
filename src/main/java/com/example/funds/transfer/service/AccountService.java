@@ -1,11 +1,13 @@
 package com.example.funds.transfer.service;
 
 import com.example.funds.transfer.dto.AccountDto;
-import com.example.funds.transfer.entity.Account;
-import com.example.funds.transfer.repositories.AccountDtoRepository;
+import com.example.funds.transfer.dto.TransferDto;
+import com.example.funds.transfer.entity.TransferHistory;
+import com.example.funds.transfer.entity.TransferStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,10 +15,12 @@ import java.util.Optional;
 public class AccountService {
 
     private final AccountServiceImpl accountService;
+    private final TransferServiceImpl transferService;
 
     @Autowired
-    public AccountService(AccountServiceImpl accountService) {
+    public AccountService(AccountServiceImpl accountService, TransferServiceImpl transferService) {
         this.accountService = accountService;
+        this.transferService = transferService;
     }
 
     public List<AccountDto> getAll() {
@@ -30,4 +34,51 @@ public class AccountService {
     public AccountDto save(AccountDto accountDto) {
         return accountService.save(accountDto);
     }
+
+    public BigDecimal getTaxes(BigDecimal amount) {
+        BigDecimal taxes;
+        if(amount.compareTo(BigDecimal.valueOf(1000)) < 1) {
+            taxes = amount.multiply(BigDecimal.valueOf(.002));
+        }else {
+            taxes = amount.multiply(BigDecimal.valueOf(.005));
+        }
+        return taxes;
+    }
+
+    public BigDecimal getDiscountWithTaxes(BigDecimal amount) {
+        return amount.add(getTaxes(amount));
+    }
+
+    public boolean isLimitExceeded(Long accountId) {
+        List<TransferHistory> transfersNum = transferService.getByAccount(accountId);
+        return transfersNum.size() == 3;
+    }
+
+    public boolean hasEnoughFund(BigDecimal totalWithTaxes, AccountDto account) {
+        return totalWithTaxes.compareTo(account.getFunds()) < 1;
+    }
+
+    public TransferStatus getTransferStatus(TransferDto transferDto) {
+        Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
+        Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
+
+        if(transferDto.getOriginAccount().equals(transferDto.getDestinationAccount())) {
+            return TransferStatus.SAME_ACCOUNT;
+        }
+
+        if(originAccount.isEmpty() && destinationAccount.isEmpty()) {
+            return TransferStatus.ACCOUNT_NOT_FOUND;
+        }
+
+        if(!this.hasEnoughFund(getDiscountWithTaxes(transferDto.getAmount()), originAccount.get())){
+            return TransferStatus.INSUFFICIENT_FUNDS;
+        }
+
+        if(this.isLimitExceeded(transferDto.getOriginAccount())){
+            return TransferStatus.LIMIT_EXCEEDED;
+        }
+
+        return TransferStatus.TRANSFER_OK;
+    }
+
 }
