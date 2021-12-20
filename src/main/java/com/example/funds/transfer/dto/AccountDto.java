@@ -1,0 +1,15 @@
+package com.example.funds.transfer.dto;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+public class AccountDto {
+    private Long id;
+    private String name;
+    private String currency;
+    private BigDecimal funds;
+    private LocalDateTime creationDate;
+}
