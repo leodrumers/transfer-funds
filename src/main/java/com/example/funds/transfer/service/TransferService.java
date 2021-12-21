@@ -55,7 +55,7 @@ public class TransferService {
             saveHistory(transferDto, TRANSFER_SUCCESS.label);
 
             response.setTaxCollected(taxes.setScale(2, RoundingMode.FLOOR));
-            response.setCad(exchange(accountDto.getFunds()));
+            response.setCad(exchange(accountDto.getFunds(), accountDto.getCurrency()));
             response.setDescription(transferDto.getDescription());
         }else {
             response.setStatus(TRANSFER_ERROR.label);
@@ -86,14 +86,14 @@ public class TransferService {
         return  accountService.save(destinationAccount);
     }
 
-    private RateResponse getRate() {
-        String url = "http://api.exchangeratesapi.io/v1/latest?access_key=81d8c993d9ffac0f22d7e87e4e6a1bf0&base=EUR&symbols=USD,CAD";
+    private RateResponse getRate(String base) {
+        String url = "http://api.exchangeratesapi.io/v1/latest?access_key=81d8c993d9ffac0f22d7e87e4e6a1bf0&base=EUR&symbols=CAD,"+base;
         return restTemplate.getForObject(url, RateResponse.class);
     }
 
-    private BigDecimal exchange(BigDecimal amount) {
-        RateResponse rate = getRate();
-        BigDecimal usd = BigDecimal.valueOf(rate.getRates().get("USD"));
+    private BigDecimal exchange(BigDecimal amount, String base) {
+        RateResponse rate = getRate(base);
+        BigDecimal usd = BigDecimal.valueOf(rate.getRates().get(base));
         BigDecimal cad = BigDecimal.valueOf(rate.getRates().get("CAD"));
         BigDecimal eur = amount.divide(usd, RoundingMode.FLOOR);
         return eur.multiply(cad);
