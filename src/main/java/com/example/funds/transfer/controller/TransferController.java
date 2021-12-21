@@ -32,7 +32,12 @@ public class TransferController {
 
     @PostMapping("/transfer_funds")
     public ResponseEntity<TransferResponse> transfer(@RequestBody TransferDto transfer) {
-        return ResponseEntity.ok(transferService.transfer(transfer));
+        TransferResponse response = transferService.transfer(transfer);
+        if(response.getErrors().isEmpty()) {
+            return ResponseEntity.ok(response);
+        }else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @GetMapping("/rate")
