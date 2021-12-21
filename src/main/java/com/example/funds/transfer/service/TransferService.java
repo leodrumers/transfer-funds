@@ -1,12 +1,14 @@
 package com.example.funds.transfer.service;
 
 import com.example.funds.transfer.dto.AccountDto;
+import com.example.funds.transfer.dto.RateResponse;
 import com.example.funds.transfer.dto.TransferDto;
 import com.example.funds.transfer.dto.TransferResponse;
 import com.example.funds.transfer.entity.TransferHistory;
 import com.example.funds.transfer.entity.TransferStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,11 +22,13 @@ import static com.example.funds.transfer.entity.TransferStatus.*;
 public class TransferService {
     private final TransferServiceImpl transferService;
     private final AccountService accountService;
+    private final RestTemplate restTemplate;
 
     @Autowired
-    public TransferService(TransferServiceImpl service, AccountService accountService) {
+    public TransferService(TransferServiceImpl service, AccountService accountService, RestTemplate restTemplate) {
         this.transferService = service;
         this.accountService = accountService;
+        this.restTemplate = restTemplate;
     }
 
     public List<TransferHistory> getAll() {
@@ -46,12 +50,12 @@ public class TransferService {
             AccountDto accountDto = originAccount.get();
             AccountDto destinationAccountDto = destinationAccount.get();
 
-            subtractFunds(accountDto, transferDto.getAmount());
+            accountDto = subtractFunds(accountDto, transferDto.getAmount());
             addFunds(destinationAccountDto, transferDto.getAmount());
             saveHistory(transferDto, TRANSFER_SUCCESS.label);
 
             response.setTaxCollected(taxes.setScale(2, RoundingMode.FLOOR));
-            response.setCad(transferDto.getAmount());
+            response.setCad(exchange(accountDto.getFunds()));
             response.setDescription(transferDto.getDescription());
         }
 
@@ -69,14 +73,27 @@ public class TransferService {
         transferService.save(transferHistory);
     }
 
-    private void subtractFunds(AccountDto accountDto, BigDecimal amount) {
+    private AccountDto subtractFunds(AccountDto accountDto, BigDecimal amount) {
         accountDto.setFunds(accountDto.getFunds().subtract(accountService.getDiscountWithTaxes(amount)).setScale(2, RoundingMode.FLOOR));
-        accountService.save(accountDto);
+        return accountService.save(accountDto);
     }
 
-    private void addFunds(AccountDto destinationAccount, BigDecimal amount) {
+    private AccountDto addFunds(AccountDto destinationAccount, BigDecimal amount) {
         destinationAccount.setFunds(destinationAccount.getFunds().add(amount).setScale(2, RoundingMode.FLOOR));
-        accountService.save(destinationAccount);
+        return  accountService.save(destinationAccount);
+    }
+
+    private RateResponse getRate() {
+        String url = "http://api.exchangeratesapi.io/v1/latest?access_key=81d8c993d9ffac0f22d7e87e4e6a1bf0&base=EUR&symbols=USD,CAD";
+        return restTemplate.getForObject(url, RateResponse.class);
+    }
+
+    private BigDecimal exchange(BigDecimal amount) {
+        RateResponse rate = getRate();
+        BigDecimal usd = BigDecimal.valueOf(rate.getRates().get("USD"));
+        BigDecimal cad = BigDecimal.valueOf(rate.getRates().get("CAD"));
+        BigDecimal eur = amount.divide(usd, RoundingMode.FLOOR);
+        return eur.multiply(cad);
     }
 
 }
