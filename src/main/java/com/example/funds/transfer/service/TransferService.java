@@ -57,6 +57,9 @@ public class TransferService {
             response.setTaxCollected(taxes.setScale(2, RoundingMode.FLOOR));
             response.setCad(exchange(accountDto.getFunds()));
             response.setDescription(transferDto.getDescription());
+        }else {
+            response.setStatus(TRANSFER_ERROR.label);
+            errors.add(transferStatus.label);
         }
 
         response.setErrors(errors);

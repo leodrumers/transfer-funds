@@ -62,6 +62,10 @@ public class AccountService {
         Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
         Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
 
+        if(transferDto.getAmount().compareTo(BigDecimal.valueOf(0)) < 0) {
+            return TransferStatus.NEGATIVE_AMOUNT;
+        }
+
         if(transferDto.getOriginAccount().equals(transferDto.getDestinationAccount())) {
             return TransferStatus.SAME_ACCOUNT;
         }

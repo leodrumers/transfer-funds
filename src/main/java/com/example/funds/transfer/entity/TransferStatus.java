@@ -4,6 +4,7 @@ public enum TransferStatus {
     TRANSFER_OK("Ok"),
     TRANSFER_SUCCESS("SUCCESS"),
     TRANSFER_ERROR("ERROR"),
+    NEGATIVE_AMOUNT("negative_amount"),
     LIMIT_EXCEEDED("limit_exceeded"),
     SAME_ACCOUNT("same_account"),
     INSUFFICIENT_FUNDS("insufficient_funds"),
