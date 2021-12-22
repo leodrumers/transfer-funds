@@ -4,11 +4,10 @@ import com.example.funds.transfer.dto.RateResponse;
 import com.example.funds.transfer.dto.TransferDto;
 import com.example.funds.transfer.dto.TransferResponse;
 import com.example.funds.transfer.entity.TransferHistory;
-import com.example.funds.transfer.service.TransferService;
+import com.example.funds.transfer.service.TransferServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -16,23 +15,21 @@ import java.util.List;
 @RequestMapping("/transfers")
 public class TransferController {
 
-    private final TransferService transferService;
-    private final RestTemplate restTemplate;
+    private final TransferServiceImpl transferServiceimpl;
 
     @Autowired
-    public TransferController(TransferService transferService, RestTemplate restTemplate) {
-        this.transferService = transferService;
-        this.restTemplate = restTemplate;
+    public TransferController(TransferServiceImpl transferServiceimpl) {
+        this.transferServiceimpl = transferServiceimpl;
     }
 
     @GetMapping
     public ResponseEntity<List<TransferHistory>> getAll() {
-        return ResponseEntity.ok().body(transferService.getAll());
+        return ResponseEntity.ok().body(transferServiceimpl.getAll());
     }
 
     @PostMapping("/transfer_funds")
     public ResponseEntity<TransferResponse> transfer(@RequestBody TransferDto transfer) {
-        TransferResponse response = transferService.transfer(transfer);
+        TransferResponse response = transferServiceimpl.transfer(transfer);
         if(response.getErrors().isEmpty()) {
             return ResponseEntity.ok(response);
         }else {
@@ -42,8 +39,6 @@ public class TransferController {
 
     @GetMapping("/rate")
     public ResponseEntity<RateResponse> getRate() {
-        String url = "http://api.exchangeratesapi.io/v1/latest?access_key=81d8c993d9ffac0f22d7e87e4e6a1bf0&base=EUR&symbols=USD,CAD";
-        RateResponse rateResponse = restTemplate.getForObject(url, RateResponse.class);
-        return ResponseEntity.ok(rateResponse);
+        return ResponseEntity.ok(transferServiceimpl.getExchangeRate());
     }
 }

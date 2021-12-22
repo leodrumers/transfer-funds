@@ -8,9 +8,8 @@ import java.util.List;
 
 
 public interface TransferHistoryRepository extends JpaRepository<TransferHistory, Long> {
-    List<TransferHistory> getTransferHistoryByOriginAccountEquals(Long accountId);
-
     Integer countTransferHistoryByOriginAccountAndTransferDateBeforeAndTransferDateAfterAndStatusEquals(
             Long accountId, LocalDateTime before, LocalDateTime after, String status
     );
+    List<TransferHistory> findAllByOriginAccountEquals(Long accountId);
 }

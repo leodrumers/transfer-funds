@@ -4,7 +4,6 @@ import com.example.funds.transfer.dto.AccountDto;
 import com.example.funds.transfer.entity.Account;
 import com.example.funds.transfer.entity.Currency;
 import com.example.funds.transfer.mapper.AccountMapper;
-import com.example.funds.transfer.repositories.AccountDtoRepository;
 import com.example.funds.transfer.repositories.AccountJpaRepository;
 import com.example.funds.transfer.repositories.CurrencyJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class AccountServiceImpl implements AccountDtoRepository {
+public class AccountServiceImpl implements AccountService {
 
     private final AccountJpaRepository repository;
     private final CurrencyJpaRepository currencyRepository;

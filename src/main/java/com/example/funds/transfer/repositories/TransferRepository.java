@@ -7,9 +7,4 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TransferRepository {
-    List<TransferHistory> getAll();
-    List<TransferHistory> getByAccount(Long accounId);
-    Integer countTransfers(Long accountId);
-    TransferHistory save(TransferHistory transferHistory);
-    TransferHistory transfer(TransferDto transferDto);
 }
