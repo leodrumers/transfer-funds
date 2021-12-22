@@ -7,6 +7,7 @@ import com.example.funds.transfer.dto.TransferResponse;
 import com.example.funds.transfer.entity.TransferHistory;
 import com.example.funds.transfer.entity.TransferStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,6 +24,12 @@ public class TransferService {
     private final TransferServiceImpl transferService;
     private final AccountService accountService;
     private final RestTemplate restTemplate;
+
+    @Value("{exchange.baseUrl}")
+    private String echangeUrl;
+
+    @Value("{exchange.accessKey}")
+    private String accessKey;
 
     @Autowired
     public TransferService(TransferServiceImpl service, AccountService accountService, RestTemplate restTemplate) {
@@ -87,7 +94,7 @@ public class TransferService {
     }
 
     private RateResponse getRate(String base) {
-        String url = "http://api.exchangeratesapi.io/v1/latest?access_key=81d8c993d9ffac0f22d7e87e4e6a1bf0&base=EUR&symbols=CAD,"+base;
+        String url = echangeUrl + "latest?access_key=" + accessKey + "&base=EUR&symbols=CAD," +base;
         return restTemplate.getForObject(url, RateResponse.class);
     }
 
