@@ -131,8 +131,7 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public boolean isLimitExceeded(Long accountId) {
         Integer transfers = countTransfers(accountId);
-        System.out.println(transfers);
-        return transfers.equals(3);
+        return transfers.compareTo(3) > 0;
     }
 
     @Override
