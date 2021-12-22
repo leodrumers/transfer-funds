@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +43,7 @@ public class AccountService {
         }else {
             taxes = amount.multiply(BigDecimal.valueOf(.005));
         }
-        return taxes;
+        return taxes.setScale(2, RoundingMode.FLOOR);
     }
 
     public BigDecimal getDiscountWithTaxes(BigDecimal amount) {
@@ -51,7 +52,7 @@ public class AccountService {
 
     public boolean isLimitExceeded(Long accountId) {
         List<TransferHistory> transfersNum = transferService.getByAccount(accountId);
-        return transfersNum.size() == 3;
+        return transfersNum.size() >= 3;
     }
 
     public boolean hasEnoughFund(BigDecimal totalWithTaxes, AccountDto account) {
@@ -59,8 +60,6 @@ public class AccountService {
     }
 
     public TransferStatus getTransferStatus(TransferDto transferDto) {
-        Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
-        Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
 
         if(transferDto.getAmount().compareTo(BigDecimal.valueOf(0)) < 0) {
             return TransferStatus.NEGATIVE_AMOUNT;
@@ -70,16 +69,19 @@ public class AccountService {
             return TransferStatus.SAME_ACCOUNT;
         }
 
-        if(originAccount.isEmpty() && destinationAccount.isEmpty()) {
-            return TransferStatus.ACCOUNT_NOT_FOUND;
-        }
+        Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
+        Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
 
-        if(!this.hasEnoughFund(getDiscountWithTaxes(transferDto.getAmount()), originAccount.get())){
-            return TransferStatus.INSUFFICIENT_FUNDS;
+        if(originAccount.isEmpty() || destinationAccount.isEmpty()) {
+            return TransferStatus.ACCOUNT_NOT_FOUND;
         }
 
         if(this.isLimitExceeded(transferDto.getOriginAccount())){
             return TransferStatus.LIMIT_EXCEEDED;
+        }
+
+        if(!this.hasEnoughFund(getDiscountWithTaxes(transferDto.getAmount()), originAccount.get())){
+            return TransferStatus.INSUFFICIENT_FUNDS;
         }
 
         return TransferStatus.TRANSFER_OK;

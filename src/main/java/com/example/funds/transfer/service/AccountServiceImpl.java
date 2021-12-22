@@ -42,7 +42,7 @@ public class AccountServiceImpl implements AccountDtoRepository {
     @Override
     public AccountDto save(AccountDto accountDto) {
         Account account = mapper.toAccount(accountDto);
-        Currency currency = currencyRepository.findByCurrency(accountDto.getCurrency());
+        Currency currency = currencyRepository.findTopByCurrencyEquals(accountDto.getCurrency());
         account.setCurrency(currency);
         account.setTransfers(new ArrayList<>());
         return mapper.toAccountDto(repository.save(account));

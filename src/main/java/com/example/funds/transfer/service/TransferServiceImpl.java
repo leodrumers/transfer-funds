@@ -28,7 +28,7 @@ public class TransferServiceImpl implements TransferRepository {
 
     @Override
     public List<TransferHistory> getByAccount(Long accountId) {
-        return repository.getTransferHistoryByOriginAccount(accountId);
+        return repository.getTransferHistoryByOriginAccountEquals(accountId);
     }
 
     @Override
