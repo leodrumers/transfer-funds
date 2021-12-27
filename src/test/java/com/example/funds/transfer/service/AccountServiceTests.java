@@ -1,8 +1,6 @@
 package com.example.funds.transfer.service;
 
 import com.example.funds.transfer.dto.AccountDto;
-import com.example.funds.transfer.dto.TransferDto;
-import com.example.funds.transfer.entity.TransferStatus;
 import jdk.jfr.Name;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

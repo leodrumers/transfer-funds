@@ -48,7 +48,6 @@ public class TransferServiceImpl implements TransferService {
         return this.transferHistoryRepository.findAll();
     }
 
-    @Override
     public Integer countTransfers(Long accountId) {
         LocalDateTime after = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
         LocalDateTime before = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
@@ -128,13 +127,11 @@ public class TransferServiceImpl implements TransferService {
         return eur.multiply(cad);
     }
 
-    @Override
     public boolean isLimitExceeded(Long accountId) {
         Integer transfers = countTransfers(accountId);
         return transfers.compareTo(3) > 0;
     }
 
-    @Override
     public TransferStatus getTransferStatus(TransferDto transferDto) {
         if(transferDto.getAmount().compareTo(BigDecimal.valueOf(0)) < 0) {
             return TransferStatus.NEGATIVE_AMOUNT;
