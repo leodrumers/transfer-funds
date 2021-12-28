@@ -26,11 +26,10 @@ public class TransferController {
     @PostMapping("/transfer_funds")
     public ResponseEntity<TransferResponse> transfer(@RequestBody TransferDto transfer) {
         TransferResponse response = transferService.transfer(transfer);
-        if(response.getErrors().isEmpty()) {
-            return ResponseEntity.ok(response);
-        }else {
+        if(!response.getErrors().isEmpty()) {
             return ResponseEntity.badRequest().body(response);
         }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/rate")

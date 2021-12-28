@@ -8,7 +8,8 @@ public enum TransferStatus {
     LIMIT_EXCEEDED("limit_exceeded"),
     SAME_ACCOUNT("same_account"),
     INSUFFICIENT_FUNDS("insufficient_funds"),
-    ACCOUNT_NOT_FOUND("account_not_found");
+    ACCOUNT_NOT_FOUND("account_not_found"),
+    THIRD_SERVICE_ERROR("third_service_error");
 
     public final String label;
     TransferStatus(String label) {

@@ -6,6 +6,7 @@ import com.example.funds.transfer.dto.TransferDto;
 import com.example.funds.transfer.dto.TransferResponse;
 import com.example.funds.transfer.entity.TransferStatus;
 import com.example.funds.transfer.entity.TransferHistory;
+import com.example.funds.transfer.exception.ApiRequestException;
 import com.example.funds.transfer.repositories.TransferHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,12 +63,11 @@ public class TransferServiceImpl implements TransferService {
         List<String> errors = new ArrayList<>();
         response.setTaxCollected(BigDecimal.valueOf(0.0).setScale(2, RoundingMode.FLOOR));
 
-        Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
-        Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
-
-        TransferStatus transferStatus = getTransferStatus(transferDto);
-        response.setStatus(transferStatus.label);
-        if (transferStatus == TRANSFER_OK) {
+        try {
+            Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
+            Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
+            getTransferStatus(transferDto);
+            response.setStatus(TRANSFER_OK.label);
             BigDecimal taxes = getTaxes(transferDto.getAmount());
             AccountDto accountDto = originAccount.get();
             AccountDto destinationAccountDto = destinationAccount.get();
@@ -79,9 +79,11 @@ public class TransferServiceImpl implements TransferService {
             response.setTaxCollected(taxes.setScale(2, RoundingMode.FLOOR));
             response.setCad(exchangeAmount(accountDto.getFunds(), accountDto.getCurrency()));
             response.setDescription(transferDto.getDescription());
-        }else {
+
+        } catch (Exception e) {
+            errors.add(e.getMessage());
             response.setStatus(TRANSFER_ERROR.label);
-            errors.add(transferStatus.label);
+            response.setTaxCollected(BigDecimal.ZERO.setScale(2, RoundingMode.FLOOR));
         }
 
         response.setErrors(errors);
@@ -90,7 +92,7 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public RateResponse getExchangeRate() {
-        String url = exchangeUrl + "latest?access_key=" + accessKey +"&base=EUR&symbols=USD,CAD";
+        String url = exchangeUrl + "latest?access_key=" + accessKey + "&base=EUR&symbols=USD,CAD";
         return restTemplate.getForObject(url, RateResponse.class);
     }
 
@@ -101,7 +103,7 @@ public class TransferServiceImpl implements TransferService {
 
     private AccountDto addFunds(AccountDto destinationAccount, BigDecimal amount) {
         destinationAccount.setFunds(destinationAccount.getFunds().add(amount).setScale(2, RoundingMode.FLOOR));
-        return  accountService.save(destinationAccount);
+        return accountService.save(destinationAccount);
     }
 
     private void saveHistory(TransferDto transferDto, String status) {
@@ -115,8 +117,12 @@ public class TransferServiceImpl implements TransferService {
     }
 
     private RateResponse getRateResponse(String base) {
-        String url = exchangeUrl + "latest?access_key=" + accessKey + "&base=EUR&symbols=CAD," +base;
-        return restTemplate.getForObject(url, RateResponse.class);
+        try {
+            String url = exchangeUrl + "latest?access_key=" + accessKey + "&base=EUR&symbols=CAD," + base;
+            return restTemplate.getForObject(url, RateResponse.class);
+        }catch (Exception e){
+            throw new ApiRequestException(THIRD_SERVICE_ERROR.label);
+        }
     }
 
     private BigDecimal exchangeAmount(BigDecimal amount, String base) {
@@ -129,34 +135,32 @@ public class TransferServiceImpl implements TransferService {
 
     public boolean isLimitExceeded(Long accountId) {
         Integer transfers = countTransfers(accountId);
-        return transfers.compareTo(3) > 0;
+        return transfers.compareTo(3) > -1;
     }
 
-    public TransferStatus getTransferStatus(TransferDto transferDto) {
-        if(transferDto.getAmount().compareTo(BigDecimal.valueOf(0)) < 0) {
-            return TransferStatus.NEGATIVE_AMOUNT;
+    public void getTransferStatus(TransferDto transferDto) {
+        if (transferDto.getAmount().compareTo(BigDecimal.valueOf(0)) < 0) {
+            throw new ApiRequestException(NEGATIVE_AMOUNT.label);
         }
 
-        if(transferDto.getOriginAccount().equals(transferDto.getDestinationAccount())) {
-            return TransferStatus.SAME_ACCOUNT;
+        if (transferDto.getOriginAccount().equals(transferDto.getDestinationAccount())) {
+            throw new ApiRequestException(SAME_ACCOUNT.label);
         }
 
         Optional<AccountDto> originAccount = accountService.getAccount(transferDto.getOriginAccount());
         Optional<AccountDto> destinationAccount = accountService.getAccount(transferDto.getDestinationAccount());
 
-        if(originAccount.isEmpty() || destinationAccount.isEmpty()) {
-            return TransferStatus.ACCOUNT_NOT_FOUND;
+        if (originAccount.isEmpty() || destinationAccount.isEmpty()) {
+            throw new ApiRequestException(ACCOUNT_NOT_FOUND.label);
         }
 
-        if(isLimitExceeded(transferDto.getOriginAccount())){
-            return TransferStatus.LIMIT_EXCEEDED;
+        if (isLimitExceeded(transferDto.getOriginAccount())) {
+            throw new ApiRequestException(LIMIT_EXCEEDED.label);
         }
 
-        if(!hasEnoughFunds(getDiscountWithTaxes(transferDto.getAmount()), originAccount.get())){
-            return TransferStatus.INSUFFICIENT_FUNDS;
+        if (!hasEnoughFunds(getDiscountWithTaxes(transferDto.getAmount()), originAccount.get())) {
+            throw new ApiRequestException(INSUFFICIENT_FUNDS.label);
         }
-
-        return TransferStatus.TRANSFER_OK;
     }
 
 }
