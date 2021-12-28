@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 
 import static com.example.funds.transfer.utils.TaxesUtil.getTaxes;
 import static com.example.funds.transfer.utils.TaxesUtil.hasEnoughFunds;
@@ -33,8 +34,7 @@ public class TaxesUtilTests {
 
     @Test
     void should_check_if_has_enough_funds() {
-        AccountDto accountDto = new AccountDto();
-        accountDto.setFunds(BigDecimal.valueOf(4000));
+        AccountDto accountDto = new AccountDto(1L, "test user", "USD", BigDecimal.valueOf(4000), LocalDateTime.now());
         BigDecimal amount = BigDecimal.valueOf(5000);
         boolean hasEnough = hasEnoughFunds(amount, accountDto);
         assertThat(hasEnough).isFalse();

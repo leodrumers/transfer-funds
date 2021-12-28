@@ -59,8 +59,8 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public TransferResponse transfer(TransferDto transferDto) {
-        TransferResponse response = new TransferResponse();
         List<String> errors = new ArrayList<>();
+        TransferResponse response = new TransferResponse("", errors, BigDecimal.valueOf(0.0), null, null);
         response.setTaxCollected(BigDecimal.valueOf(0.0).setScale(2, RoundingMode.FLOOR));
 
         try {

@@ -2,11 +2,13 @@ package com.example.funds.transfer.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@AllArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransferResponse {

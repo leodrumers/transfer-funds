@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,25 +24,18 @@ public class AccountServiceTests {
     private AccountService accountService;
 
     @Autowired
-    private AccountServiceImpl accountServiceImpl;
-
-    @Autowired
-    private TransferServiceImpl transferServiceImpl;
+    private TransferService transferService;
 
     @Test
     void contextLoads() {
         assertThat(accountService).isNotNull();
-        assertThat(accountServiceImpl).isNotNull();
-        assertThat(transferServiceImpl).isNotNull();
+        assertThat(transferService).isNotNull();
     }
 
     @Name("should_return_account")
     @Test
     void should_return_new_account() {
-        AccountDto accountDto = new AccountDto();
-        accountDto.setName("test user");
-        accountDto.setCurrency("USD");
-        accountDto.setFunds(BigDecimal.valueOf(10000));
+        AccountDto accountDto = new AccountDto(null, "test user", "USD",BigDecimal.valueOf(10000), null);
         accountService.save(accountDto);
 
         List<AccountDto> dtoList = accountService.getAll();
