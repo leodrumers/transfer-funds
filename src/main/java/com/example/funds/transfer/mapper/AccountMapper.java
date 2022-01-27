@@ -1,5 +1,6 @@
 package com.example.funds.transfer.mapper;
 
+import com.example.funds.transfer.dto.AccountBalanceDto;
 import com.example.funds.transfer.dto.AccountDto;
 import com.example.funds.transfer.entity.Account;
 import org.mapstruct.InheritInverseConfiguration;

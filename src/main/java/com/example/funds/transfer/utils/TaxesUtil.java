@@ -12,10 +12,10 @@ public class TaxesUtil {
 
     public static BigDecimal getTaxes(BigDecimal amount) {
         BigDecimal taxes;
-        if(amount.compareTo(BigDecimal.valueOf(1000)) < 1) {
-            taxes = amount.multiply(BigDecimal.valueOf(.002));
+        if(amount.compareTo(BigDecimal.valueOf(100)) > 0) {
+            taxes = amount.multiply(BigDecimal.valueOf(.02));
         }else {
-            taxes = amount.multiply(BigDecimal.valueOf(.005));
+            taxes = amount.multiply(BigDecimal.valueOf(.05));
         }
         return taxes.setScale(2, RoundingMode.FLOOR);
     }

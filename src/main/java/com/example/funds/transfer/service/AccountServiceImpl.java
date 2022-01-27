@@ -1,6 +1,8 @@
 package com.example.funds.transfer.service;
 
+import com.example.funds.transfer.dto.AccountBalanceDto;
 import com.example.funds.transfer.dto.AccountDto;
+import com.example.funds.transfer.dto.AccountRequest;
 import com.example.funds.transfer.entity.Account;
 import com.example.funds.transfer.entity.Currency;
 import com.example.funds.transfer.mapper.AccountMapper;
@@ -9,9 +11,12 @@ import com.example.funds.transfer.repositories.CurrencyJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.example.funds.transfer.entity.TransferStatus.*;
 
 @Repository
 public class AccountServiceImpl implements AccountService {
@@ -45,5 +50,28 @@ public class AccountServiceImpl implements AccountService {
         account.setCurrency(currency);
         account.setTransfers(new ArrayList<>());
         return mapper.toAccountDto(repository.save(account));
+    }
+
+    @Override
+    public AccountBalanceDto getAccountById(AccountRequest accountDto) {
+        List<String> errors = new ArrayList<>(List.of());
+        AccountBalanceDto balanceDto = new AccountBalanceDto(ERROR.label, errors, BigDecimal.ZERO);
+        try {
+            Long id = Long.parseLong(accountDto.getAccount());
+            Optional<Account> account = repository.findAccountByAccountId(id);
+
+            if(account.isPresent()){
+                balanceDto.setBalance(account.get().getFunds());
+                balanceDto.setStatus(TRANSFER_OK.label);
+            }else {
+                errors.add(ACCOUNT_NOT_FOUND.label);
+            }
+            return balanceDto;
+
+        }catch (Exception e ) {
+            errors.add(e.getMessage());
+            balanceDto.setErrors(errors);
+            return balanceDto;
+        }
     }
 }

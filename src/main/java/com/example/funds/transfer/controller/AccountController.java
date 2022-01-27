@@ -1,6 +1,8 @@
 package com.example.funds.transfer.controller;
 
+import com.example.funds.transfer.dto.AccountBalanceDto;
 import com.example.funds.transfer.dto.AccountDto;
+import com.example.funds.transfer.dto.AccountRequest;
 import com.example.funds.transfer.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,8 +31,15 @@ public class AccountController {
     }
 
     @PostMapping
+    @RequestMapping("/save")
     public ResponseEntity<AccountDto> save(@RequestBody AccountDto account) {
         return ResponseEntity.ok().body(accountService.save(account));
+    }
+
+    @PostMapping
+    public ResponseEntity<AccountBalanceDto> getAccountById(@RequestBody AccountRequest account) {
+        System.out.println(account.getAccount());
+        return ResponseEntity.ok(accountService.getAccountById(account));
     }
 
 }

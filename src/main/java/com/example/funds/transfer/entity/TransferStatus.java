@@ -3,7 +3,7 @@ package com.example.funds.transfer.entity;
 public enum TransferStatus {
     TRANSFER_OK("Ok"),
     TRANSFER_SUCCESS("SUCCESS"),
-    TRANSFER_ERROR("ERROR"),
+    ERROR("ERROR"),
     NEGATIVE_AMOUNT("negative_amount"),
     LIMIT_EXCEEDED("limit_exceeded"),
     SAME_ACCOUNT("same_account"),

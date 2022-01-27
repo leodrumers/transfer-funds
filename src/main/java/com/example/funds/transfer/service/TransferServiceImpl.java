@@ -4,7 +4,6 @@ import com.example.funds.transfer.dto.AccountDto;
 import com.example.funds.transfer.dto.RateResponse;
 import com.example.funds.transfer.dto.TransferDto;
 import com.example.funds.transfer.dto.TransferResponse;
-import com.example.funds.transfer.entity.TransferStatus;
 import com.example.funds.transfer.entity.TransferHistory;
 import com.example.funds.transfer.exception.ApiRequestException;
 import com.example.funds.transfer.repositories.TransferHistoryRepository;
@@ -82,7 +81,7 @@ public class TransferServiceImpl implements TransferService {
 
         } catch (Exception e) {
             errors.add(e.getMessage());
-            response.setStatus(TRANSFER_ERROR.label);
+            response.setStatus(ERROR.label);
             response.setTaxCollected(BigDecimal.ZERO.setScale(2, RoundingMode.FLOOR));
         }
 
