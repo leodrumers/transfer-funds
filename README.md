@@ -22,7 +22,7 @@ You can start the app using docker or gradle
 
 ### Using gradle console
 - To start the app using gradle run the next command
-  ```./gradlew build && java -jar build/libs/funds-transfer-0.1.0-SNAPSHOT.jar```
+  ```./gradlew build && java -jar build/libs/funds-transfer-0.0.1-SNAPSHOT.jar```
 
 ## Endpoind list
 
